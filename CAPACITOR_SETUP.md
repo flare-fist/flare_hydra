@@ -77,6 +77,21 @@ on an emulator or a plugged-in Android phone with USB debugging enabled.
 Whenever you change `www/index.html`, re-run `npx cap sync` and re-run in
 Android Studio to see the update.
 
+## Status bar overlapping content?
+
+The app now configures the status bar via `@capacitor/status-bar` on
+startup (dark teal background, content pushed below it — like Flipkart's
+colored top bar) so the clock/battery icons don't sit on top of the header.
+
+If you're on Android 15+ and still see overlap after rebuilding: newer
+Android versions force apps into edge-to-edge layout by default, which can
+override the plugin's `setOverlaysWebView(false)` call on some devices. If
+that happens, open `android/app/src/main/res/values/styles.xml` after
+running `npx cap add android` and add this attribute to the app's theme:
+```xml
+<item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+```
+
 ## App icon
 
 Right-click the `res` folder in Android Studio → **New → Image Asset**. Feed

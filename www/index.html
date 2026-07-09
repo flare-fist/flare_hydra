@@ -47,7 +47,7 @@
   .hidden{ display:none !important; }
 
   /* ---------- LOGIN ---------- */
-  #login-screen{ min-height: 100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; padding: 32px 28px; position: relative; overflow: hidden; }
+  #login-screen{ min-height: 100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; padding: calc(32px + env(safe-area-inset-top, 0px)) 28px calc(32px + env(safe-area-inset-bottom, 0px)); position: relative; overflow: hidden; }
   .login-ripple{ position:absolute; inset:0; z-index:0; opacity:0.5;
     background: radial-gradient(circle at 20% 20%, rgba(63,225,196,0.10), transparent 40%), radial-gradient(circle at 80% 70%, rgba(42,183,199,0.12), transparent 45%); }
   .login-card{ position:relative; z-index:1; width:100%; text-align:center; }
@@ -94,7 +94,7 @@
 
   /* ---------- APP ---------- */
   #app{ padding: 22px 20px 0; }
-  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 22px; }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 22px; padding-top: env(safe-area-inset-top, 0px); }
   .greeting{ font-family: var(--display); font-weight:700; font-size: 20px; }
   .greeting .sub{ display:block; font-family: var(--body); font-weight:400; font-size:12px; color: var(--ink-dim); margin-top:2px; }
   .icon-btn{ background: var(--bg-card); border:1px solid var(--line); color: var(--ink-dim);
@@ -926,6 +926,18 @@
   }
 
   // ---------- INIT ----------
+  async function configureNativeStatusBar(){
+    if(!isNative()) return;
+    const StatusBar = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.StatusBar;
+    if(!StatusBar) return;
+    try{
+      // Tell Android not to draw the WebView underneath the status bar —
+      // this is what stops the clock/battery icons from overlapping content.
+      await StatusBar.setOverlaysWebView({ overlay: false });
+      await StatusBar.setBackgroundColor({ color: '#0B2430' });
+      await StatusBar.setStyle({ style: 'DARK' }); // dark background -> light icons
+    } catch(e){ /* plugin not available on this build, safe to ignore */ }
+  }
   async function initApp(){
     state.date = todayStr();
     const log = await loadLog(state.date);
@@ -936,6 +948,7 @@
     setupReminderTimer();
   }
 
+  configureNativeStatusBar();
   tryResumeSession();
 })();
 </script>
