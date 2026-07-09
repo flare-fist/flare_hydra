@@ -26,6 +26,17 @@
   *{ box-sizing:border-box; }
   html,body{ margin:0; padding:0; }
   body{
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  input, textarea{
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+  }
+  body{
     background: radial-gradient(ellipse at top, #123748 0%, var(--bg) 55%, #071720 100%);
     color: var(--ink);
     font-family: var(--body);
@@ -185,10 +196,10 @@
       <div id="view-login">
         <label class="field-label" for="login-email">Email</label>
         <input type="email" id="login-email" placeholder="you@example.com" autocomplete="off" />
-        <label class="field-label" for="login-password">Password</label>
-        <input type="password" id="login-password" placeholder="Your password" autocomplete="off" />
+        <label class="field-label" for="login-password">PIN</label>
+        <input type="password" id="login-password" placeholder="4–6 digit PIN" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" />
         <button class="btn-primary" id="login-submit-btn">Log in</button>
-        <p class="link-row"><a href="#" id="forgot-link">Forgot password?</a></p>
+        <p class="link-row"><a href="#" id="forgot-link">Forgot PIN?</a></p>
         <div class="auth-error" id="login-error"></div>
       </div>
 
@@ -198,10 +209,10 @@
         <input type="text" id="signup-username" placeholder="e.g. flarefist" autocomplete="off" />
         <label class="field-label" for="signup-email">Email</label>
         <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="off" />
-        <label class="field-label" for="signup-password">Password</label>
-        <input type="password" id="signup-password" placeholder="At least 6 characters" autocomplete="off" />
-        <label class="field-label" for="signup-confirm">Confirm password</label>
-        <input type="password" id="signup-confirm" placeholder="Re-enter password" autocomplete="off" />
+        <label class="field-label" for="signup-password">PIN</label>
+        <input type="password" id="signup-password" placeholder="4–6 digits" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" />
+        <label class="field-label" for="signup-confirm">Confirm PIN</label>
+        <input type="password" id="signup-confirm" placeholder="Re-enter PIN" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" />
         <button class="btn-primary" id="signup-submit-btn">Create account</button>
         <div class="auth-error" id="signup-error"></div>
       </div>
@@ -221,11 +232,11 @@
         <div class="otp-banner" id="otp-banner"></div>
         <label class="field-label" for="otp-code">Reset code</label>
         <input type="text" id="otp-code" placeholder="6-digit code" inputmode="numeric" maxlength="6" autocomplete="off" />
-        <label class="field-label" for="new-password">New password</label>
-        <input type="password" id="new-password" placeholder="At least 6 characters" autocomplete="off" />
-        <label class="field-label" for="new-password-confirm">Confirm new password</label>
-        <input type="password" id="new-password-confirm" placeholder="Re-enter new password" autocomplete="off" />
-        <button class="btn-primary" id="reset-submit-btn">Reset password</button>
+        <label class="field-label" for="new-password">New PIN</label>
+        <input type="password" id="new-password" placeholder="4–6 digits" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" />
+        <label class="field-label" for="new-password-confirm">Confirm new PIN</label>
+        <input type="password" id="new-password-confirm" placeholder="Re-enter new PIN" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off" />
+        <button class="btn-primary" id="reset-submit-btn">Reset PIN</button>
         <div class="auth-error" id="forgot-reset-error"></div>
         <p class="back-link" id="back-to-login-2">← Back to log in</p>
       </div>
@@ -241,7 +252,7 @@
         <input type="email" id="google-email" placeholder="you@gmail.com" autocomplete="off" />
         <button class="btn-primary" id="google-confirm-btn">Continue</button>
       </div>
-      <p class="google-note">This uses your Google email as your profile name — it isn't full Google sign-in, since that needs a real backend to verify your password.</p>
+      <p class="google-note">This uses your Google email as your profile name — it isn't full Google sign-in, since that needs a real backend to verify your identity.</p>
     </div>
   </div>
 
@@ -278,7 +289,7 @@
     <div class="section-label">Log a drink</div>
     <div class="vessel-row" id="vessel-row"></div>
     <div class="custom-row">
-      <input type="number" id="custom-ml" placeholder="Custom amount in ml" min="1" />
+      <input type="number" id="custom-ml" placeholder="Custom amount in ml" min="1" inputmode="numeric" pattern="[0-9]*" />
       <button id="custom-add-btn">Add</button>
     </div>
 
@@ -293,25 +304,20 @@
     <div class="settings-card">
       <div class="settings-row">
         <div class="lbl">Daily goal<small>Your target water intake</small></div>
-        <div class="goal-edit"><input type="number" id="goal-input" min="200" step="50" /><span style="font-size:12px;color:var(--ink-dim)">ml</span></div>
+        <div class="goal-edit"><input type="number" id="goal-input" min="200" step="50" inputmode="numeric" pattern="[0-9]*" /><span style="font-size:12px;color:var(--ink-dim)">ml</span></div>
       </div>
       <div class="settings-row">
-        <div class="lbl">Remind me if I go quiet<small>Nudge after no log for this long</small></div>
-        <select id="reminder-interval">
-          <option value="30">30 min</option>
-          <option value="60">1 hour</option>
-          <option value="120" selected>2 hours</option>
-          <option value="180">3 hours</option>
-        </select>
+        <div class="lbl">Daily reminder<small>Get a notification at this time every day</small></div>
+        <input type="time" id="reminder-time" style="margin:0; padding:8px 10px; width:auto;" />
       </div>
       <div class="settings-row">
-        <div class="lbl">Browser notifications<small id="notif-status-text">Not enabled yet</small></div>
+        <div class="lbl">Notifications<small id="notif-status-text">Not enabled yet</small></div>
         <button class="toggle" id="notif-toggle"></button>
       </div>
       <div class="save-note" id="save-note"></div>
     </div>
 
-    <p class="footnote">Reminders fire only while this tab is open in your browser.<br/>For real background push on your phone, this would need to be built as an installable app.</p>
+    <p class="footnote" id="web-footnote">Reminders fire only while this tab is open in your browser.<br/>For real background push on your phone, this would need to be built as an installable app.</p>
   </div>
 
 </div>
@@ -426,14 +432,28 @@
   document.getElementById('back-to-login-2').addEventListener('click', ()=>showAuthView('login'));
 
   // ---------- LOGIN ----------
+  const SESSION_KEY = 'session:current';
   async function doLogin(uid, displayName){
     state.user = uid;
     state.displayName = displayName;
     await loadProfile();
     await updateLoginStreak();
+    await storeSet(SESSION_KEY, { uid, displayName }, false);
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
     initApp();
+  }
+  async function tryResumeSession(){
+    const session = await storeGet(SESSION_KEY, false);
+    if(!session || !session.uid) return false;
+    state.user = session.uid;
+    state.displayName = session.displayName;
+    await loadProfile();
+    await updateLoginStreak();
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    await initApp();
+    return true;
   }
 
   document.getElementById('signup-submit-btn').addEventListener('click', async ()=>{
@@ -443,8 +463,8 @@
     const confirm = document.getElementById('signup-confirm').value;
     if(!username || !email || !pass || !confirm){ setError('signup-error','Please fill in every field.'); return; }
     if(!email.includes('@') || !email.includes('.')){ setError('signup-error','Enter a valid email address.'); return; }
-    if(pass.length < 6){ setError('signup-error','Password must be at least 6 characters.'); return; }
-    if(pass !== confirm){ setError('signup-error','Passwords do not match.'); return; }
+    if(!/^\d{4,6}$/.test(pass)){ setError('signup-error','PIN must be 4-6 digits.'); return; }
+    if(pass !== confirm){ setError('signup-error','PINs do not match.'); return; }
     setError('signup-error','Checking...');
     const eKey = sanitizeKeyPart(email);
     const existing = await getAccount(eKey);
@@ -459,13 +479,13 @@
   document.getElementById('login-submit-btn').addEventListener('click', async ()=>{
     const email = document.getElementById('login-email').value.trim().toLowerCase();
     const pass = document.getElementById('login-password').value;
-    if(!email || !pass){ setError('login-error','Enter your email and password.'); return; }
+    if(!email || !pass){ setError('login-error','Enter your email and PIN.'); return; }
     setError('login-error','Checking...');
     const eKey = sanitizeKeyPart(email);
     const acct = await getAccount(eKey);
     if(!acct){ setError('login-error','No account found for this email. Try signing up.'); return; }
     const hash = await sha256Hex(acct.salt+pass);
-    if(hash !== acct.passwordHash){ setError('login-error','Incorrect password. Try again or reset it below.'); return; }
+    if(hash !== acct.passwordHash){ setError('login-error','Incorrect PIN. Try again or reset it below.'); return; }
     setError('login-error','');
     doLogin('acct:'+eKey, acct.username);
   });
@@ -496,9 +516,9 @@
     const code = document.getElementById('otp-code').value.trim();
     const newPass = document.getElementById('new-password').value;
     const confirmPass = document.getElementById('new-password-confirm').value;
-    if(!code || !newPass || !confirmPass){ setError('forgot-reset-error','Fill in the code and your new password.'); return; }
-    if(newPass.length < 6){ setError('forgot-reset-error','Password must be at least 6 characters.'); return; }
-    if(newPass !== confirmPass){ setError('forgot-reset-error','Passwords do not match.'); return; }
+    if(!code || !newPass || !confirmPass){ setError('forgot-reset-error','Fill in the code and your new PIN.'); return; }
+    if(!/^\d{4,6}$/.test(newPass)){ setError('forgot-reset-error','PIN must be 4-6 digits.'); return; }
+    if(newPass !== confirmPass){ setError('forgot-reset-error','PINs do not match.'); return; }
     const otpRecord = await storeGet('otp:'+eKey, true);
     if(!otpRecord || otpRecord.code !== code || Date.now() > otpRecord.expiresAt){
       setError('forgot-reset-error','That code is invalid or expired. Request a new one.'); return;
@@ -515,7 +535,7 @@
     document.getElementById('login-password').value = '';
     setError('login-error','');
     showAuthView('login');
-    setError('login-error','Password reset — log in with your new password.');
+    setError('login-error','PIN reset — log in with your new PIN.');
   });
 
   document.getElementById('google-btn').addEventListener('click', ()=>{
@@ -536,8 +556,9 @@
     if(e.key==='Enter'){ e.preventDefault(); document.getElementById('google-confirm-btn').click(); }
   });
 
-  document.getElementById('logout-btn').addEventListener('click', ()=>{
+  document.getElementById('logout-btn').addEventListener('click', async ()=>{
     if(reminderTimer) clearInterval(reminderTimer);
+    await storeDelete(SESSION_KEY, false);
     document.getElementById('app').classList.add('hidden');
     document.getElementById('login-screen').classList.remove('hidden');
     document.getElementById('login-email').value='';
@@ -554,20 +575,21 @@
     if(p){
       state.goal = p.goal || 2000;
       state.reminderMinutes = p.reminderMinutes || 120;
+      state.reminderTime = p.reminderTime || '20:00';
       state.notifEnabled = !!p.notifEnabled;
       state.presets = p.presets || {...DEFAULT_PRESETS};
       state.loginStreak = p.loginStreak || 0;
       state.lastLoginDate = p.lastLoginDate || null;
       if(p.displayName) state.displayName = p.displayName;
     } else {
-      state.goal = 2000; state.reminderMinutes = 120; state.notifEnabled = false;
+      state.goal = 2000; state.reminderMinutes = 120; state.reminderTime = '20:00'; state.notifEnabled = false;
       state.presets = {...DEFAULT_PRESETS}; state.loginStreak = 0; state.lastLoginDate = null;
       await saveProfile();
     }
   }
   async function saveProfile(){
     await storeSet(userKey(), {
-      goal: state.goal, reminderMinutes: state.reminderMinutes, notifEnabled: state.notifEnabled,
+      goal: state.goal, reminderMinutes: state.reminderMinutes, reminderTime: state.reminderTime, notifEnabled: state.notifEnabled,
       presets: state.presets, loginStreak: state.loginStreak, lastLoginDate: state.lastLoginDate,
       displayName: state.displayName
     });
@@ -633,7 +655,7 @@
     const tapArea = btn.querySelector('.tap-area');
     const current = state.presets[type];
     tapArea.innerHTML = ICONS[iconKeyFor(type)] + '<span class="vname">'+type+'</span>'
-      + '<div class="vml-edit"><input type="number" min="1" value="'+current+'" id="preset-edit-input"/><button id="preset-save-btn">✓</button></div>';
+      + '<div class="vml-edit"><input type="number" min="1" value="'+current+'" id="preset-edit-input" inputmode="numeric" pattern="[0-9]*"/><button id="preset-save-btn">✓</button></div>';
     const input = tapArea.querySelector('#preset-edit-input');
     input.focus(); input.select();
     const save = async ()=>{
@@ -739,7 +761,9 @@
     document.getElementById('greeting-text').innerHTML = 'Hi, '+escapeHtml(state.displayName)+' '+todaysEmoji()+'<span class="sub" id="date-text"></span>';
     document.getElementById('date-text').textContent = weekdayName(state.date) + ' \u00b7 ' + toDisplayDate(state.date);
     document.getElementById('goal-input').value = state.goal;
-    document.getElementById('reminder-interval').value = String(state.reminderMinutes);
+    document.getElementById('reminder-time').value = state.reminderTime;
+    const webFootnote = document.getElementById('web-footnote');
+    if(webFootnote) webFootnote.classList.toggle('hidden', isNative());
     renderVessel(total);
     renderLogList();
     renderReminderBanner(total);
@@ -759,9 +783,9 @@
       goalSaveTimeout = setTimeout(async ()=>{ await saveProfile(); flashSaveNote('Goal saved'); render(); }, 500);
     }
   });
-  document.getElementById('reminder-interval').addEventListener('change', async (e)=>{
-    state.reminderMinutes = parseInt(e.target.value,10);
-    await saveProfile(); flashSaveNote('Reminder interval saved');
+  document.getElementById('reminder-time').addEventListener('change', async (e)=>{
+    state.reminderTime = e.target.value;
+    await saveProfile(); flashSaveNote('Reminder time saved');
     await scheduleNativeReminders();
     setupReminderTimer();
   });
@@ -777,7 +801,7 @@
   });
 
   // ---------- NOTIFICATIONS ----------
-  const REMINDER_NOTIF_IDS = Array.from({length:16}, (_,i)=>9001+i);
+  const REMINDER_NOTIF_ID = 9001;
   function isNative(){ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }
   function localNotifPlugin(){ return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications; }
 
@@ -810,24 +834,26 @@
     if(typeof Notification !== 'undefined'){ new Notification(title, { body }); }
   }
 
-  // On native, we schedule real one-off reminders ahead of time so they fire
-  // even if the app is closed — this is the piece a browser tab can't do.
+  // On native, schedule one notification that repeats daily at the exact
+  // chosen time — this fires even if the app is fully closed, and Android
+  // itself handles keeping it alive across closes/reboots.
   async function scheduleNativeReminders(){
     if(!isNative()) return;
     const plugin = localNotifPlugin();
     if(!plugin) return;
-    await plugin.cancel({ notifications: REMINDER_NOTIF_IDS.map(id=>({id})) }).catch(()=>{});
+    await plugin.cancel({ notifications: [{ id: REMINDER_NOTIF_ID }] }).catch(()=>{});
     if(!state.notifEnabled) return;
     const granted = await getNotifPermissionGranted();
     if(!granted) return;
-    const stepMs = state.reminderMinutes * 60000;
-    const notifications = REMINDER_NOTIF_IDS.map((id, i)=>({
-      id,
-      title: 'Time for a water break 💧',
-      body: "Don't forget to log your water — you can check today's progress in Flare-Hydra.",
-      schedule: { at: new Date(Date.now() + stepMs*(i+1)) }
-    }));
-    await plugin.schedule({ notifications });
+    const [hour, minute] = (state.reminderTime || '20:00').split(':').map(Number);
+    await plugin.schedule({
+      notifications: [{
+        id: REMINDER_NOTIF_ID,
+        title: 'Time for a water break 💧',
+        body: "Don't forget to log your water — check today's progress in Flare-Hydra.",
+        schedule: { on: { hour, minute }, repeats: true, allowWhileIdle: true }
+      }]
+    });
   }
 
   function updateNotifUI(){
@@ -835,7 +861,7 @@
     const statusText = document.getElementById('notif-status-text');
     if(isNative()){
       toggle.className = 'toggle' + (state.notifEnabled ? ' on' : '');
-      statusText.textContent = state.notifEnabled ? 'Enabled — you\u2019ll get reminders even if the app is closed' : 'Not enabled yet';
+      statusText.textContent = state.notifEnabled ? 'Enabled — you\u2019ll get a reminder at '+state.reminderTime+' even if the app is closed' : 'Not enabled yet';
       return;
     }
     const granted = (typeof Notification !== 'undefined') && Notification.permission === 'granted';
@@ -850,7 +876,7 @@
       const granted = await requestNotifPermission();
       if(granted){
         state.notifEnabled = true;
-        await fireImmediateNotification('Flare-Hydra reminders on', "We'll nudge you if you go quiet on water.");
+        await fireImmediateNotification('Flare-Hydra reminders on', "We'll nudge you at "+state.reminderTime+" every day.");
       }
     } else {
       state.notifEnabled = false;
@@ -863,24 +889,23 @@
   function setupReminderTimer(){
     if(reminderTimer) clearInterval(reminderTimer);
     if(isNative()) return; // native reminders are pre-scheduled, no polling needed
-    reminderTimer = setInterval(checkReminder, 60*1000);
+    reminderTimer = setInterval(checkReminder, 30*1000);
   }
+  let lastFiredDate = null;
   async function checkReminder(){
     if(isNative()) return; // handled by scheduleNativeReminders instead
     if(!state.notifEnabled) return;
     if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-    if(state.date !== todayStr()){ return; }
-    const log = await loadLog(todayStr());
+    const now = new Date();
+    const nowHHMM = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    if(nowHHMM !== (state.reminderTime || '20:00')) return;
+    const today = todayStr();
+    if(lastFiredDate === today) return; // already fired today
+    const log = await loadLog(today);
     const total = totalMl(log.entries||[]);
+    lastFiredDate = today;
     if(total >= state.goal) return;
-    const sorted = [...log.entries].sort((a,b)=> a.time < b.time ? 1 : -1);
-    let refTime;
-    if(sorted.length){ const [h,m] = sorted[0].time.split(':').map(Number); refTime = new Date(); refTime.setHours(h,m,0,0); }
-    else { refTime = new Date(); refTime.setHours(7,0,0,0); }
-    const diffMin = (Date.now() - refTime.getTime())/60000;
-    if(diffMin >= state.reminderMinutes){
-      new Notification('Time for a water break 💧', { body: "You're at "+total+' of '+state.goal+' ml today. Log a glass to stay on track.' });
-    }
+    new Notification('Time for a water break 💧', { body: "You're at "+total+' of '+state.goal+' ml today. Log a glass to stay on track.' });
   }
 
   // ---------- INIT ----------
@@ -893,6 +918,8 @@
     await scheduleNativeReminders();
     setupReminderTimer();
   }
+
+  tryResumeSession();
 })();
 </script>
 </body>
