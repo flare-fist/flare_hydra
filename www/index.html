@@ -307,8 +307,13 @@
         <div class="goal-edit"><input type="number" id="goal-input" min="200" step="50" inputmode="numeric" pattern="[0-9]*" /><span style="font-size:12px;color:var(--ink-dim)">ml</span></div>
       </div>
       <div class="settings-row">
-        <div class="lbl">Daily reminder<small>Get a notification at this time every day</small></div>
-        <input type="time" id="reminder-time" style="margin:0; padding:8px 10px; width:auto;" />
+        <div class="lbl">Remind me every<small>Repeats all day until you log water</small></div>
+        <select id="reminder-interval">
+          <option value="30">30 min</option>
+          <option value="60">1 hour</option>
+          <option value="120" selected>2 hours</option>
+          <option value="180">3 hours</option>
+        </select>
       </div>
       <div class="settings-row">
         <div class="lbl">Notifications<small id="notif-status-text">Not enabled yet</small></div>
@@ -761,7 +766,7 @@
     document.getElementById('greeting-text').innerHTML = 'Hi, '+escapeHtml(state.displayName)+' '+todaysEmoji()+'<span class="sub" id="date-text"></span>';
     document.getElementById('date-text').textContent = weekdayName(state.date) + ' \u00b7 ' + toDisplayDate(state.date);
     document.getElementById('goal-input').value = state.goal;
-    document.getElementById('reminder-time').value = state.reminderTime;
+    document.getElementById('reminder-interval').value = String(state.reminderMinutes);
     const webFootnote = document.getElementById('web-footnote');
     if(webFootnote) webFootnote.classList.toggle('hidden', isNative());
     renderVessel(total);
@@ -783,9 +788,9 @@
       goalSaveTimeout = setTimeout(async ()=>{ await saveProfile(); flashSaveNote('Goal saved'); render(); }, 500);
     }
   });
-  document.getElementById('reminder-time').addEventListener('change', async (e)=>{
-    state.reminderTime = e.target.value;
-    await saveProfile(); flashSaveNote('Reminder time saved');
+  document.getElementById('reminder-interval').addEventListener('change', async (e)=>{
+    state.reminderMinutes = parseInt(e.target.value,10);
+    await saveProfile(); flashSaveNote('Reminder interval saved');
     await scheduleNativeReminders();
     setupReminderTimer();
   });
@@ -801,7 +806,16 @@
   });
 
   // ---------- NOTIFICATIONS ----------
-  const REMINDER_NOTIF_ID = 9001;
+  // Android can't check "did they already log water" while the app is fully
+  // closed — that check only happens while the app is running. So the
+  // reliable way to get real recurring background reminders is to
+  // pre-schedule a batch of them spaced by the chosen interval, covering
+  // several days ahead, and refresh/extend that batch every time the app
+  // opens. They'll fire on schedule even with the app closed; they just
+  // can't dynamically skip themselves if you already hit your goal today
+  // without the app running (that would need a server-side push instead).
+  const REMINDER_BATCH_SIZE = 60;
+  const REMINDER_ID_BASE = 9001;
   function isNative(){ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }
   function localNotifPlugin(){ return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications; }
 
@@ -834,34 +848,36 @@
     if(typeof Notification !== 'undefined'){ new Notification(title, { body }); }
   }
 
-  // On native, schedule one notification that repeats daily at the exact
-  // chosen time — this fires even if the app is fully closed, and Android
-  // itself handles keeping it alive across closes/reboots.
   async function scheduleNativeReminders(){
     if(!isNative()) return;
     const plugin = localNotifPlugin();
     if(!plugin) return;
-    await plugin.cancel({ notifications: [{ id: REMINDER_NOTIF_ID }] }).catch(()=>{});
+    const idsToCancel = Array.from({length:REMINDER_BATCH_SIZE},(_,i)=>({id:REMINDER_ID_BASE+i}));
+    await plugin.cancel({ notifications: idsToCancel }).catch(()=>{});
     if(!state.notifEnabled) return;
     const granted = await getNotifPermissionGranted();
     if(!granted) return;
-    const [hour, minute] = (state.reminderTime || '20:00').split(':').map(Number);
-    await plugin.schedule({
-      notifications: [{
-        id: REMINDER_NOTIF_ID,
-        title: 'Time for a water break 💧',
-        body: "Don't forget to log your water — check today's progress in Flare-Hydra.",
-        schedule: { on: { hour, minute }, repeats: true, allowWhileIdle: true }
-      }]
-    });
+    const stepMs = state.reminderMinutes * 60000;
+    const notifications = Array.from({length:REMINDER_BATCH_SIZE},(_,i)=>({
+      id: REMINDER_ID_BASE+i,
+      title: 'Time for a water break 💧',
+      body: "Don't forget to log your water — check today's progress in Flare-Hydra.",
+      schedule: { at: new Date(Date.now() + stepMs*(i+1)), allowWhileIdle: true }
+    }));
+    await plugin.schedule({ notifications });
   }
 
+  function intervalLabel(mins){
+    if(mins < 60) return mins+' min';
+    const h = mins/60;
+    return h+' hour'+(h>1?'s':'');
+  }
   function updateNotifUI(){
     const toggle = document.getElementById('notif-toggle');
     const statusText = document.getElementById('notif-status-text');
     if(isNative()){
       toggle.className = 'toggle' + (state.notifEnabled ? ' on' : '');
-      statusText.textContent = state.notifEnabled ? 'Enabled — you\u2019ll get a reminder at '+state.reminderTime+' even if the app is closed' : 'Not enabled yet';
+      statusText.textContent = state.notifEnabled ? 'Enabled — nudges every '+intervalLabel(state.reminderMinutes)+', even with the app closed' : 'Not enabled yet';
       return;
     }
     const granted = (typeof Notification !== 'undefined') && Notification.permission === 'granted';
@@ -876,7 +892,7 @@
       const granted = await requestNotifPermission();
       if(granted){
         state.notifEnabled = true;
-        await fireImmediateNotification('Flare-Hydra reminders on', "We'll nudge you at "+state.reminderTime+" every day.");
+        await fireImmediateNotification('Flare-Hydra reminders on', "We'll nudge you every "+intervalLabel(state.reminderMinutes)+" until you log some water.");
       }
     } else {
       state.notifEnabled = false;
@@ -889,23 +905,24 @@
   function setupReminderTimer(){
     if(reminderTimer) clearInterval(reminderTimer);
     if(isNative()) return; // native reminders are pre-scheduled, no polling needed
-    reminderTimer = setInterval(checkReminder, 30*1000);
+    reminderTimer = setInterval(checkReminder, 60*1000);
   }
-  let lastFiredDate = null;
   async function checkReminder(){
     if(isNative()) return; // handled by scheduleNativeReminders instead
     if(!state.notifEnabled) return;
     if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-    const now = new Date();
-    const nowHHMM = String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
-    if(nowHHMM !== (state.reminderTime || '20:00')) return;
-    const today = todayStr();
-    if(lastFiredDate === today) return; // already fired today
-    const log = await loadLog(today);
+    if(state.date !== todayStr()){ return; }
+    const log = await loadLog(todayStr());
     const total = totalMl(log.entries||[]);
-    lastFiredDate = today;
     if(total >= state.goal) return;
-    new Notification('Time for a water break 💧', { body: "You're at "+total+' of '+state.goal+' ml today. Log a glass to stay on track.' });
+    const sorted = [...log.entries].sort((a,b)=> a.time < b.time ? 1 : -1);
+    let refTime;
+    if(sorted.length){ const [h,m] = sorted[0].time.split(':').map(Number); refTime = new Date(); refTime.setHours(h,m,0,0); }
+    else { refTime = new Date(); refTime.setHours(7,0,0,0); }
+    const diffMin = (Date.now() - refTime.getTime())/60000;
+    if(diffMin >= state.reminderMinutes){
+      new Notification('Time for a water break 💧', { body: "You're at "+total+' of '+state.goal+' ml today. Log a glass to stay on track.' });
+    }
   }
 
   // ---------- INIT ----------
