@@ -1,0 +1,11 @@
+{
+  "appId": "com.flarefist.flarehydra",
+  "appName": "Flare-Hydra",
+  "webDir": "www",
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#3FE1C4"
+    }
+  }
+}

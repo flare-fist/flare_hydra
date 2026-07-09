@@ -1,0 +1,899 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Flare-Hydra</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0B2430;
+    --bg-elev: #102F3D;
+    --bg-card: #123645;
+    --ink: #EAF4F4;
+    --ink-dim: #9FC0C4;
+    --line: #1D4A5A;
+    --aqua: #3FE1C4;
+    --aqua-deep: #21A99A;
+    --coral: #FF7A59;
+    --coral-dim: rgba(255,122,89,0.16);
+    --radius: 18px;
+    --display: 'Space Grotesk', sans-serif;
+    --body: 'Inter', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: radial-gradient(ellipse at top, #123748 0%, var(--bg) 55%, #071720 100%);
+    color: var(--ink);
+    font-family: var(--body);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root{ max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; padding-bottom: 40px; }
+  .hidden{ display:none !important; }
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{ min-height: 100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; padding: 32px 28px; position: relative; overflow: hidden; }
+  .login-ripple{ position:absolute; inset:0; z-index:0; opacity:0.5;
+    background: radial-gradient(circle at 20% 20%, rgba(63,225,196,0.10), transparent 40%), radial-gradient(circle at 80% 70%, rgba(42,183,199,0.12), transparent 45%); }
+  .login-card{ position:relative; z-index:1; width:100%; text-align:center; }
+  .drop{ width: 46px; height: 58px; margin: 0 auto 18px; animation: bob 3.5s ease-in-out infinite; }
+  @keyframes bob{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-6px); } }
+  .brand{ font-family: var(--display); font-weight:700; font-size: 28px; letter-spacing: 0.5px; margin: 0; }
+  .brand span{ color: var(--aqua); }
+  .brand-by{ font-size: 11px; color: var(--ink-dim); letter-spacing:0.04em; margin: 2px 0 30px; font-weight:500; }
+  .brand-by b{ color: var(--ink-dim); font-weight:600; }
+  .field-label{ display:block; text-align:left; font-size: 12px; letter-spacing:0.06em; text-transform: uppercase; color: var(--ink-dim); margin: 0 0 8px; font-weight:600; }
+  input[type="text"], input[type="password"], input[type="number"], input[type="email"]{
+    width:100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--bg-elev); color: var(--ink); font-family: var(--body); font-size:15px;
+    margin-bottom: 18px; outline: none; transition: border-color .15s; }
+  input:focus{ border-color: var(--aqua); }
+  .btn-primary{ width:100%; padding: 15px; border-radius: 12px; border:none; cursor:pointer;
+    background: linear-gradient(135deg, var(--aqua), var(--aqua-deep));
+    color: #06231F; font-family: var(--display); font-weight:700; font-size:15px; letter-spacing:0.02em;
+    box-shadow: 0 8px 24px rgba(63,225,196,0.25); }
+  .btn-primary:active{ transform: scale(0.98); }
+  .login-note{ color: var(--ink-dim); font-size:12px; margin-top: 14px; line-height:1.5; }
+  .divider{ display:flex; align-items:center; gap:12px; margin: 18px 0; color: var(--ink-dim); font-size:12px; }
+  .divider::before, .divider::after{ content:''; flex:1; height:1px; background: var(--line); }
+  .auth-tabs{ display:flex; gap:6px; background: var(--bg-elev); border-radius:12px; padding:4px; margin-bottom:20px; }
+  .auth-tab{ flex:1; padding:10px; border:none; border-radius:9px; background:transparent; color: var(--ink-dim);
+    font-family: var(--display); font-weight:600; font-size:13px; cursor:pointer; }
+  .auth-tab.active{ background: var(--bg-card); color: var(--aqua); }
+  .auth-copy{ font-size:12.5px; color: var(--ink-dim); text-align:left; margin: 0 0 16px; line-height:1.5; }
+  .auth-error{ color: var(--coral); font-size:12.5px; text-align:left; min-height:16px; margin-top:-6px; margin-bottom:8px; line-height:1.4; }
+  .link-row{ text-align:right; margin: -8px 0 4px; }
+  .link-row a{ color: var(--aqua); font-size:12.5px; text-decoration:none; }
+  .back-link{ text-align:left; color: var(--ink-dim); font-size:12.5px; cursor:pointer; margin-top:14px; }
+  .back-link:hover{ color: var(--aqua); }
+  .otp-banner{ background: rgba(63,225,196,0.12); border:1px solid var(--aqua-deep); border-radius:12px;
+    padding:12px 14px; margin-bottom:16px; text-align:left; font-size:12.5px; line-height:1.6; color: var(--ink); }
+  .otp-banner b{ color: var(--aqua); font-family: var(--mono); font-size:16px; letter-spacing:2px; }
+  .btn-google{ width:100%; padding: 13px; border-radius: 12px; cursor:pointer;
+    background: var(--bg-elev); border:1px solid var(--line); color: var(--ink);
+    font-family: var(--body); font-weight:600; font-size:14px;
+    display:flex; align-items:center; justify-content:center; gap:10px; }
+  .btn-google:active{ transform: scale(0.98); }
+  .btn-google svg{ width:18px; height:18px; }
+  .google-note{ color: var(--ink-dim); font-size:11px; margin-top:10px; line-height:1.5; }
+
+  /* ---------- APP ---------- */
+  #app{ padding: 22px 20px 0; }
+  .topbar{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 22px; }
+  .greeting{ font-family: var(--display); font-weight:700; font-size: 20px; }
+  .greeting .sub{ display:block; font-family: var(--body); font-weight:400; font-size:12px; color: var(--ink-dim); margin-top:2px; }
+  .icon-btn{ background: var(--bg-card); border:1px solid var(--line); color: var(--ink-dim);
+    width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:16px; }
+
+  .hero{ background: var(--bg-card); border:1px solid var(--line); border-radius: var(--radius);
+    padding: 22px 18px 16px; display:flex; gap:18px; align-items:center; margin-bottom:16px; }
+  .vessel-wrap{ position:relative; width: 108px; height:170px; flex-shrink:0; }
+  svg#vessel{ width:100%; height:100%; overflow:visible; }
+  .hero-stats{ flex:1; }
+  .hero-total{ font-family: var(--mono); font-weight:600; font-size: 30px; line-height:1; }
+  .hero-total small{ font-family: var(--body); font-size: 14px; color: var(--ink-dim); font-weight:500; }
+  .hero-goal-row{ display:flex; align-items:center; gap:8px; margin-top:6px; color: var(--ink-dim); font-size:13px; }
+  .hero-pct{ display:inline-block; margin-top:12px; font-family: var(--mono); font-size:12px; color: var(--aqua); background: rgba(63,225,196,0.12); padding:4px 9px; border-radius:20px; }
+  .streak-pill{ display:inline-flex; align-items:center; gap:5px; font-size:12px; color: var(--ink-dim); margin-top:8px; }
+
+  .section-label{ font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color: var(--ink-dim); font-weight:600; margin: 22px 0 10px; }
+  .vessel-row{ display:flex; gap:10px; }
+  .vessel-btn{ position:relative; flex:1; background: var(--bg-card); border:1px solid var(--line); border-radius:14px;
+    padding: 14px 6px 10px; text-align:center; cursor:pointer; color: var(--ink); transition: border-color .15s, transform .1s; }
+  .vessel-btn:active{ transform: scale(0.96); }
+  .vessel-btn:hover{ border-color: var(--aqua-deep); }
+  .vessel-btn svg{ width:30px; height:30px; margin-bottom:6px; }
+  .vessel-btn .vname{ font-size:12.5px; font-weight:600; display:block; }
+  .vessel-btn .vml{ font-family: var(--mono); font-size:11px; color: var(--ink-dim); }
+  .edit-pencil{ position:absolute; top:6px; right:6px; width:20px; height:20px; border-radius:6px;
+    background: var(--bg-elev); border:1px solid var(--line); color: var(--ink-dim); font-size:10px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .vml-edit{ display:flex; gap:4px; align-items:center; justify-content:center; margin-top:2px; }
+  .vml-edit input{ width:56px; margin:0; padding:5px 6px; font-size:11px; text-align:center; }
+  .vml-edit button{ background: var(--aqua-deep); border:none; color:#06231F; border-radius:6px; font-size:11px; padding:5px 7px; cursor:pointer; font-weight:700; }
+
+  .custom-row{ display:flex; gap:8px; margin-top:10px; }
+  .custom-row input{ margin:0; flex:1; }
+  .custom-row button{ background: var(--bg-elev); border:1px solid var(--line); color: var(--aqua);
+    border-radius:12px; padding: 0 18px; font-family:var(--display); font-weight:600; cursor:pointer; }
+
+  .settings-card{ background: var(--bg-card); border:1px solid var(--line); border-radius: var(--radius); padding:16px; margin-top:22px; }
+  .settings-row{ display:flex; align-items:center; justify-content:space-between; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .settings-row:last-child{ border-bottom:none; }
+  .settings-row .lbl{ font-size:13.5px; }
+  .settings-row .lbl small{ display:block; color:var(--ink-dim); font-size:11.5px; margin-top:2px; }
+  .goal-edit{ display:flex; gap:6px; align-items:center; }
+  .goal-edit input{ width:80px; margin:0; padding:8px 10px; text-align:right; font-family:var(--mono); }
+  select{ background: var(--bg-elev); color: var(--ink); border:1px solid var(--line); border-radius:8px; padding: 8px 10px; font-family: var(--body); font-size:13px; }
+  .toggle{ width:42px; height:24px; border-radius:20px; background: var(--line); position:relative; cursor:pointer; border:none; flex-shrink:0; }
+  .toggle.on{ background: var(--aqua-deep); }
+  .toggle::after{ content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background: var(--ink); transition: left .15s; }
+  .toggle.on::after{ left:21px; background:#06231F; }
+  .save-note{ font-size:11.5px; color: var(--aqua); height:14px; margin-top:6px; }
+
+  .week-strip{ display:flex; gap:7px; margin-top:12px; }
+  .day-chip{ flex:1; background: var(--bg-elev); border:1px solid var(--line); border-radius:12px; padding: 8px 4px; text-align:center; cursor:pointer; font-size:11px; color:var(--ink-dim); }
+  .day-chip.active{ border-color: var(--aqua); }
+  .day-chip.is-today{ background: rgba(63,225,196,0.14); border-color: var(--aqua-deep); }
+  .day-chip.is-today.active{ background: rgba(63,225,196,0.22); border-color: var(--aqua); box-shadow: 0 0 0 1px var(--aqua); }
+  .day-chip.is-today .dchip-pct{ color: var(--aqua); }
+  .day-chip .dchip-pct{ display:block; font-family: var(--mono); font-weight:600; font-size:13px; color: var(--ink); margin-top:4px; }
+  .day-chip.full .dchip-pct{ color: var(--aqua); }
+
+  .log-list{ margin-top: 12px; display:flex; flex-direction:column; gap:8px; }
+  .log-item{ display:flex; align-items:center; gap:10px; background: var(--bg-card); border:1px solid var(--line); border-radius:12px; padding: 10px 12px; }
+  .log-item .li-icon{ width:26px; height:26px; flex-shrink:0; color: var(--aqua); }
+  .li-mid{ flex:1; }
+  .li-type{ font-size:13.5px; font-weight:600; }
+  .li-time{ font-size:11.5px; color: var(--ink-dim); font-family: var(--mono); }
+  .li-ml{ font-family: var(--mono); font-size:13px; color: var(--ink-dim); }
+  .li-del{ background:none; border:none; color: var(--ink-dim); font-size:16px; cursor:pointer; padding:2px 4px; }
+  .li-del:hover{ color: var(--coral); }
+  .empty-note{ color: var(--ink-dim); font-size:13px; text-align:center; padding: 22px 10px; }
+
+  .reminder-banner{ display:flex; gap:10px; align-items:flex-start; background: var(--coral-dim); border:1px solid rgba(255,122,89,0.35);
+    border-radius:14px; padding: 12px 14px; margin-top:16px; font-size:12.5px; color: var(--ink); line-height:1.5; }
+  .reminder-banner b{ color: var(--coral); }
+
+  .footnote{ text-align:center; color: var(--ink-dim); font-size:11px; margin: 26px 0 6px; line-height:1.6; }
+</style>
+</head>
+<body>
+<div id="root">
+
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <div class="login-ripple"></div>
+    <div class="login-card">
+      <svg class="drop" viewBox="0 0 46 58" fill="none">
+        <path d="M23 2C23 2 4 27 4 40C4 50.5 12.5 58 23 58C33.5 58 42 50.5 42 40C42 27 23 2 23 2Z" fill="url(#dropGrad)"/>
+        <defs><linearGradient id="dropGrad" x1="23" y1="2" x2="23" y2="58"><stop stop-color="#3FE1C4"/><stop offset="1" stop-color="#21A99A"/></linearGradient></defs>
+      </svg>
+      <h1 class="brand">Flare-<span>Hydra</span></h1>
+      <p class="brand-by">by <b>flarefist</b></p>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login">Log in</button>
+        <button class="auth-tab" id="tab-signup">Sign up</button>
+      </div>
+
+      <!-- LOG IN -->
+      <div id="view-login">
+        <label class="field-label" for="login-email">Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="off" />
+        <label class="field-label" for="login-password">Password</label>
+        <input type="password" id="login-password" placeholder="Your password" autocomplete="off" />
+        <button class="btn-primary" id="login-submit-btn">Log in</button>
+        <p class="link-row"><a href="#" id="forgot-link">Forgot password?</a></p>
+        <div class="auth-error" id="login-error"></div>
+      </div>
+
+      <!-- SIGN UP -->
+      <div id="view-signup" class="hidden">
+        <label class="field-label" for="signup-username">Username</label>
+        <input type="text" id="signup-username" placeholder="e.g. flarefist" autocomplete="off" />
+        <label class="field-label" for="signup-email">Email</label>
+        <input type="email" id="signup-email" placeholder="you@example.com" autocomplete="off" />
+        <label class="field-label" for="signup-password">Password</label>
+        <input type="password" id="signup-password" placeholder="At least 6 characters" autocomplete="off" />
+        <label class="field-label" for="signup-confirm">Confirm password</label>
+        <input type="password" id="signup-confirm" placeholder="Re-enter password" autocomplete="off" />
+        <button class="btn-primary" id="signup-submit-btn">Create account</button>
+        <div class="auth-error" id="signup-error"></div>
+      </div>
+
+      <!-- FORGOT: REQUEST CODE -->
+      <div id="view-forgot-request" class="hidden">
+        <p class="auth-copy">Enter the email on your account. We'll generate a reset code for you.</p>
+        <label class="field-label" for="forgot-email">Email</label>
+        <input type="email" id="forgot-email" placeholder="you@example.com" autocomplete="off" />
+        <button class="btn-primary" id="forgot-send-btn">Send reset code</button>
+        <div class="auth-error" id="forgot-request-error"></div>
+        <p class="back-link" id="back-to-login-1">← Back to log in</p>
+      </div>
+
+      <!-- FORGOT: RESET WITH OTP -->
+      <div id="view-forgot-reset" class="hidden">
+        <div class="otp-banner" id="otp-banner"></div>
+        <label class="field-label" for="otp-code">Reset code</label>
+        <input type="text" id="otp-code" placeholder="6-digit code" inputmode="numeric" maxlength="6" autocomplete="off" />
+        <label class="field-label" for="new-password">New password</label>
+        <input type="password" id="new-password" placeholder="At least 6 characters" autocomplete="off" />
+        <label class="field-label" for="new-password-confirm">Confirm new password</label>
+        <input type="password" id="new-password-confirm" placeholder="Re-enter new password" autocomplete="off" />
+        <button class="btn-primary" id="reset-submit-btn">Reset password</button>
+        <div class="auth-error" id="forgot-reset-error"></div>
+        <p class="back-link" id="back-to-login-2">← Back to log in</p>
+      </div>
+
+      <div class="divider">or</div>
+
+      <button class="btn-google" id="google-btn">
+        <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M23.5 12.3c0-.85-.08-1.67-.22-2.45H12v4.63h6.44c-.28 1.5-1.13 2.77-2.4 3.62v3h3.88c2.27-2.09 3.58-5.17 3.58-8.8z"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.9l-3.88-3c-1.08.72-2.45 1.15-4.06 1.15-3.13 0-5.78-2.11-6.73-4.95H1.27v3.1C3.24 21.3 7.3 24 12 24z"/><path fill="#FBBC05" d="M5.27 14.3A7.2 7.2 0 0 1 4.9 12c0-.8.14-1.57.37-2.3V6.6H1.27A11.98 11.98 0 0 0 0 12c0 1.94.47 3.77 1.27 5.4l4-3.1z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0 7.3 0 3.24 2.7 1.27 6.6l4 3.1C6.22 6.86 8.87 4.75 12 4.75z"/></svg>
+        Continue with Google
+      </button>
+      <div id="google-inline" class="hidden" style="margin-top:14px; text-align:left;">
+        <label class="field-label" for="google-email">Your Gmail address</label>
+        <input type="email" id="google-email" placeholder="you@gmail.com" autocomplete="off" />
+        <button class="btn-primary" id="google-confirm-btn">Continue</button>
+      </div>
+      <p class="google-note">This uses your Google email as your profile name — it isn't full Google sign-in, since that needs a real backend to verify your password.</p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+    <div class="topbar">
+      <div class="greeting" id="greeting-text">Hi<span class="sub" id="date-text"></span></div>
+      <button class="icon-btn" id="logout-btn" title="Switch user">⇄</button>
+    </div>
+
+    <div class="hero">
+      <div class="vessel-wrap">
+        <svg id="vessel" viewBox="0 0 108 170">
+          <defs>
+            <clipPath id="vesselClip"><path d="M22 8 H86 L78 150 Q78 162 66 162 H42 Q30 162 30 150 Z"/></clipPath>
+            <linearGradient id="waveGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3FE1C4"/><stop offset="100%" stop-color="#1F8F86"/></linearGradient>
+          </defs>
+          <path d="M22 8 H86 L78 150 Q78 162 66 162 H42 Q30 162 30 150 Z" fill="#0C2A34" stroke="#1D4A5A" stroke-width="2"/>
+          <g clip-path="url(#vesselClip)">
+            <rect id="waterRect" x="20" width="70" fill="url(#waveGrad)" y="162" height="0"/>
+            <path id="wavePath" d="M20 162 Q 27 158 34 162 T 48 162 T 62 162 T 76 162 T 90 162 V170 H20 Z" fill="#3FE1C4" opacity="0.55"/>
+          </g>
+          <g id="ticks" stroke="#1D4A5A" stroke-width="1"></g>
+        </svg>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-total"><span id="total-ml">0</span><small> ml</small></div>
+        <div class="hero-goal-row">of <span id="goal-ml-inline" style="font-family:var(--mono); color:var(--ink); margin:0 3px;">2000</span> ml goal</div>
+        <span class="hero-pct" id="pct-badge">0%</span>
+        <div class="streak-pill">🔥 <span id="streak-text">0-day login streak</span></div>
+      </div>
+    </div>
+
+    <div class="section-label">Log a drink</div>
+    <div class="vessel-row" id="vessel-row"></div>
+    <div class="custom-row">
+      <input type="number" id="custom-ml" placeholder="Custom amount in ml" min="1" />
+      <button id="custom-add-btn">Add</button>
+    </div>
+
+    <div id="reminder-banner-slot"></div>
+
+    <div class="section-label">This week</div>
+    <div class="week-strip" id="week-strip"></div>
+
+    <div class="section-label" id="log-section-label">Today's log</div>
+    <div class="log-list" id="log-list"></div>
+
+    <div class="settings-card">
+      <div class="settings-row">
+        <div class="lbl">Daily goal<small>Your target water intake</small></div>
+        <div class="goal-edit"><input type="number" id="goal-input" min="200" step="50" /><span style="font-size:12px;color:var(--ink-dim)">ml</span></div>
+      </div>
+      <div class="settings-row">
+        <div class="lbl">Remind me if I go quiet<small>Nudge after no log for this long</small></div>
+        <select id="reminder-interval">
+          <option value="30">30 min</option>
+          <option value="60">1 hour</option>
+          <option value="120" selected>2 hours</option>
+          <option value="180">3 hours</option>
+        </select>
+      </div>
+      <div class="settings-row">
+        <div class="lbl">Browser notifications<small id="notif-status-text">Not enabled yet</small></div>
+        <button class="toggle" id="notif-toggle"></button>
+      </div>
+      <div class="save-note" id="save-note"></div>
+    </div>
+
+    <p class="footnote">Reminders fire only while this tab is open in your browser.<br/>For real background push on your phone, this would need to be built as an installable app.</p>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  const ICONS = {
+    glass: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 3H18L16.5 20C16.4 21.1 15.5 22 14.4 22H9.6C8.5 22 7.6 21.1 7.5 20L6 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M7 8H17" stroke="currentColor" stroke-width="1.4"/></svg>',
+    cup: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 6H16V15C16 18 13.8 20 11 20H9C6.2 20 4 18 4 15V6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M16 8H18C19.1 8 20 8.9 20 10C20 12 18.5 13 16.5 13" stroke="currentColor" stroke-width="1.6"/></svg>',
+    bottle: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2H14V5.5L15.5 8V20C15.5 21.1 14.6 22 13.5 22H10.5C9.4 22 8.5 21.1 8.5 20V8L10 5.5V2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12H15" stroke="currentColor" stroke-width="1.4"/></svg>',
+    custom: '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 3C12 3 6 10.5 6 15C6 18.3 8.7 21 12 21C15.3 21 18 18.3 18 15C18 10.5 12 3 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'
+  };
+  const DEFAULT_PRESETS = { Glass:250, Cup:200, Bottle:500 };
+  const EMOJIS = ['💧','🌊','💦','🥤','🚰','🧊','☔','🌧️','🐳','🫗'];
+
+  let state = {
+    user: null, displayName:'', goal: 2000, reminderMinutes: 120, notifEnabled: false,
+    presets: {...DEFAULT_PRESETS}, date: todayStr(), entries: [], loginStreak: 0, lastLoginDate: null,
+    pendingResetEmail: null,
+  };
+  let reminderTimer = null;
+
+  function todayStr(d){ const x = d || new Date(); return x.toISOString().slice(0,10); }
+  function nowTimeStr(){ const d=new Date(); return d.toTimeString().slice(0,5); }
+  function toDisplayDate(iso){ const [y,m,d]=iso.split('-'); return d+'-'+m+'-'+y; }
+  function weekdayName(iso){ const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString(undefined,{weekday:'long'}); }
+  function weekdayShort(iso){ const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString(undefined,{weekday:'short'}); }
+  function dayOfYear(d){ const start=new Date(d.getFullYear(),0,0); return Math.floor((d-start)/86400000); }
+  function todaysEmoji(){ return EMOJIS[dayOfYear(new Date()) % EMOJIS.length]; }
+  function currentWeekDays(){
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - now.getDay()); // back up to Sunday
+    const arr=[];
+    for(let i=0;i<7;i++){ const d=new Date(start); d.setDate(start.getDate()+i); arr.push(todayStr(d)); }
+    return arr;
+  }
+  function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // Storage layer: window.storage only exists inside Claude.ai's artifact
+  // preview. Outside that (a real browser, or this app packaged with
+  // Capacitor), we fall back to localStorage so the app actually persists data.
+  const hasClaudeStorage = (typeof window.storage !== 'undefined');
+  function lsKey(key, shared){ return 'flarehydra:' + (shared?'shared:':'') + key; }
+  async function storeGet(key, shared){
+    if(hasClaudeStorage){
+      try{ const r = await window.storage.get(key, !!shared); return r ? JSON.parse(r.value) : null; }
+      catch(e){ return null; }
+    }
+    try{ const raw = localStorage.getItem(lsKey(key,shared)); return raw ? JSON.parse(raw) : null; }
+    catch(e){ return null; }
+  }
+  async function storeSet(key,val, shared){
+    if(hasClaudeStorage){
+      for(let attempt=0; attempt<2; attempt++){
+        try{ await window.storage.set(key, JSON.stringify(val), !!shared); return; }
+        catch(e){
+          if(attempt===1){ console.error('storage set failed', e); }
+          else { await new Promise(r=>setTimeout(r,300)); }
+        }
+      }
+      return;
+    }
+    try{ localStorage.setItem(lsKey(key,shared), JSON.stringify(val)); }
+    catch(e){ console.error('storage set failed', e); }
+  }
+  async function storeDelete(key, shared){
+    if(hasClaudeStorage){ try{ await window.storage.delete(key, !!shared); } catch(e){ /* ignore */ } return; }
+    try{ localStorage.removeItem(lsKey(key,shared)); } catch(e){ /* ignore */ }
+  }
+
+  function sanitizeKeyPart(s){
+    return String(s).trim().toLowerCase()
+      .replace(/\s+/g,'-')
+      .replace(/['"\\\/]/g,'')
+      .replace(/[^a-z0-9@._#-]/g,'');
+  }
+  function userKey(){ return 'profile:'+sanitizeKeyPart(state.user); }
+  function logKey(date){ return 'log:'+sanitizeKeyPart(state.user)+':'+date; }
+
+  // ---------- AUTH HELPERS ----------
+  async function sha256Hex(str){
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  function randomSalt(){ return Math.random().toString(36).slice(2)+Date.now().toString(36); }
+  function genOtp(){ return String(Math.floor(100000 + Math.random()*900000)); }
+  async function getAccount(eKey){ return await storeGet('account:'+eKey, true); }
+  async function setAccount(eKey, data){ await storeSet('account:'+eKey, data, true); }
+
+  function showAuthView(view){
+    ['login','signup','forgot-request','forgot-reset'].forEach(v=>{
+      document.getElementById('view-'+v).classList.toggle('hidden', v!==view);
+    });
+    document.getElementById('tab-login').classList.toggle('active', view==='login');
+    document.getElementById('tab-signup').classList.toggle('active', view==='signup');
+    ['login-error','signup-error','forgot-request-error','forgot-reset-error'].forEach(id=>{
+      document.getElementById(id).textContent = '';
+    });
+  }
+  function setError(id, msg){ document.getElementById(id).textContent = msg; }
+
+  document.getElementById('tab-login').addEventListener('click', ()=>showAuthView('login'));
+  document.getElementById('tab-signup').addEventListener('click', ()=>showAuthView('signup'));
+  document.getElementById('forgot-link').addEventListener('click', (e)=>{
+    e.preventDefault();
+    document.getElementById('forgot-email').value = document.getElementById('login-email').value;
+    showAuthView('forgot-request');
+  });
+  document.getElementById('back-to-login-1').addEventListener('click', ()=>showAuthView('login'));
+  document.getElementById('back-to-login-2').addEventListener('click', ()=>showAuthView('login'));
+
+  // ---------- LOGIN ----------
+  async function doLogin(uid, displayName){
+    state.user = uid;
+    state.displayName = displayName;
+    await loadProfile();
+    await updateLoginStreak();
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    initApp();
+  }
+
+  document.getElementById('signup-submit-btn').addEventListener('click', async ()=>{
+    const username = document.getElementById('signup-username').value.trim();
+    const email = document.getElementById('signup-email').value.trim().toLowerCase();
+    const pass = document.getElementById('signup-password').value;
+    const confirm = document.getElementById('signup-confirm').value;
+    if(!username || !email || !pass || !confirm){ setError('signup-error','Please fill in every field.'); return; }
+    if(!email.includes('@') || !email.includes('.')){ setError('signup-error','Enter a valid email address.'); return; }
+    if(pass.length < 6){ setError('signup-error','Password must be at least 6 characters.'); return; }
+    if(pass !== confirm){ setError('signup-error','Passwords do not match.'); return; }
+    setError('signup-error','Checking...');
+    const eKey = sanitizeKeyPart(email);
+    const existing = await getAccount(eKey);
+    if(existing){ setError('signup-error','An account already exists for this email. Try logging in instead.'); return; }
+    const salt = randomSalt();
+    const passwordHash = await sha256Hex(salt+pass);
+    await setAccount(eKey, { username, salt, passwordHash, createdAt: Date.now() });
+    setError('signup-error','');
+    doLogin('acct:'+eKey, username);
+  });
+
+  document.getElementById('login-submit-btn').addEventListener('click', async ()=>{
+    const email = document.getElementById('login-email').value.trim().toLowerCase();
+    const pass = document.getElementById('login-password').value;
+    if(!email || !pass){ setError('login-error','Enter your email and password.'); return; }
+    setError('login-error','Checking...');
+    const eKey = sanitizeKeyPart(email);
+    const acct = await getAccount(eKey);
+    if(!acct){ setError('login-error','No account found for this email. Try signing up.'); return; }
+    const hash = await sha256Hex(acct.salt+pass);
+    if(hash !== acct.passwordHash){ setError('login-error','Incorrect password. Try again or reset it below.'); return; }
+    setError('login-error','');
+    doLogin('acct:'+eKey, acct.username);
+  });
+  document.getElementById('login-password').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter') document.getElementById('login-submit-btn').click();
+  });
+
+  document.getElementById('forgot-send-btn').addEventListener('click', async ()=>{
+    const email = document.getElementById('forgot-email').value.trim().toLowerCase();
+    if(!email){ setError('forgot-request-error','Enter your account email.'); return; }
+    const eKey = sanitizeKeyPart(email);
+    const acct = await getAccount(eKey);
+    if(!acct){ setError('forgot-request-error','No account found for this email.'); return; }
+    const code = genOtp();
+    await storeSet('otp:'+eKey, { code, expiresAt: Date.now()+10*60000 }, true);
+    state.pendingResetEmail = eKey;
+    document.getElementById('otp-banner').innerHTML =
+      'Since this app has no real email server, here is your reset code directly (a live production version would send this to <b>'+escapeHtml(email)+'</b> instead):<br/><b>'+code+'</b><br/>Valid for 10 minutes.';
+    document.getElementById('otp-code').value='';
+    document.getElementById('new-password').value='';
+    document.getElementById('new-password-confirm').value='';
+    showAuthView('forgot-reset');
+  });
+
+  document.getElementById('reset-submit-btn').addEventListener('click', async ()=>{
+    const eKey = state.pendingResetEmail;
+    if(!eKey){ setError('forgot-reset-error','Something went wrong — start over.'); return; }
+    const code = document.getElementById('otp-code').value.trim();
+    const newPass = document.getElementById('new-password').value;
+    const confirmPass = document.getElementById('new-password-confirm').value;
+    if(!code || !newPass || !confirmPass){ setError('forgot-reset-error','Fill in the code and your new password.'); return; }
+    if(newPass.length < 6){ setError('forgot-reset-error','Password must be at least 6 characters.'); return; }
+    if(newPass !== confirmPass){ setError('forgot-reset-error','Passwords do not match.'); return; }
+    const otpRecord = await storeGet('otp:'+eKey, true);
+    if(!otpRecord || otpRecord.code !== code || Date.now() > otpRecord.expiresAt){
+      setError('forgot-reset-error','That code is invalid or expired. Request a new one.'); return;
+    }
+    const acct = await getAccount(eKey);
+    if(!acct){ setError('forgot-reset-error','Account not found.'); return; }
+    const salt = randomSalt();
+    acct.passwordHash = await sha256Hex(salt+newPass);
+    acct.salt = salt;
+    await setAccount(eKey, acct);
+    await storeDelete('otp:'+eKey, true);
+    state.pendingResetEmail = null;
+    document.getElementById('login-email').value = '';
+    document.getElementById('login-password').value = '';
+    setError('login-error','');
+    showAuthView('login');
+    setError('login-error','Password reset — log in with your new password.');
+  });
+
+  document.getElementById('google-btn').addEventListener('click', ()=>{
+    const inline = document.getElementById('google-inline');
+    inline.classList.remove('hidden');
+    document.getElementById('google-btn').classList.add('hidden');
+    document.getElementById('google-email').focus();
+  });
+  document.getElementById('google-confirm-btn').addEventListener('click', (e)=>{
+    e.preventDefault();
+    const emailEl = document.getElementById('google-email');
+    const email = emailEl.value.trim();
+    if(!email){ emailEl.focus(); emailEl.style.borderColor = 'var(--coral)'; return; }
+    const displayName = email.split('@')[0];
+    doLogin('google:'+email.toLowerCase(), displayName);
+  });
+  document.getElementById('google-email').addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){ e.preventDefault(); document.getElementById('google-confirm-btn').click(); }
+  });
+
+  document.getElementById('logout-btn').addEventListener('click', ()=>{
+    if(reminderTimer) clearInterval(reminderTimer);
+    document.getElementById('app').classList.add('hidden');
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('login-email').value='';
+    document.getElementById('login-password').value='';
+    document.getElementById('google-email').value='';
+    document.getElementById('google-inline').classList.add('hidden');
+    document.getElementById('google-btn').classList.remove('hidden');
+    showAuthView('login');
+  });
+
+  // ---------- PROFILE ----------
+  async function loadProfile(){
+    const p = await storeGet(userKey());
+    if(p){
+      state.goal = p.goal || 2000;
+      state.reminderMinutes = p.reminderMinutes || 120;
+      state.notifEnabled = !!p.notifEnabled;
+      state.presets = p.presets || {...DEFAULT_PRESETS};
+      state.loginStreak = p.loginStreak || 0;
+      state.lastLoginDate = p.lastLoginDate || null;
+      if(p.displayName) state.displayName = p.displayName;
+    } else {
+      state.goal = 2000; state.reminderMinutes = 120; state.notifEnabled = false;
+      state.presets = {...DEFAULT_PRESETS}; state.loginStreak = 0; state.lastLoginDate = null;
+      await saveProfile();
+    }
+  }
+  async function saveProfile(){
+    await storeSet(userKey(), {
+      goal: state.goal, reminderMinutes: state.reminderMinutes, notifEnabled: state.notifEnabled,
+      presets: state.presets, loginStreak: state.loginStreak, lastLoginDate: state.lastLoginDate,
+      displayName: state.displayName
+    });
+  }
+
+  async function updateLoginStreak(){
+    const today = todayStr();
+    if(state.lastLoginDate === today){ return; }
+    const yesterday = todayStr(new Date(Date.now()-86400000));
+    state.loginStreak = (state.lastLoginDate === yesterday) ? (state.loginStreak+1) : 1;
+    state.lastLoginDate = today;
+    await saveProfile();
+  }
+
+  // ---------- LOG DATA ----------
+  async function loadLog(date){ const l = await storeGet(logKey(date)); return l || { entries: [] }; }
+  async function saveLog(date, log){ await storeSet(logKey(date), log); }
+
+  async function addEntry(type, ml){
+    if(state.date !== todayStr()){ return; }
+    const log = await loadLog(state.date);
+    log.entries.push({ id: Date.now()+'-'+Math.random().toString(36).slice(2,7), type, ml, time: nowTimeStr() });
+    await saveLog(state.date, log);
+    state.entries = log.entries;
+    render();
+  }
+  async function deleteEntry(id){
+    if(state.date !== todayStr()){ return; }
+    const log = await loadLog(state.date);
+    log.entries = log.entries.filter(e=>e.id!==id);
+    await saveLog(state.date, log);
+    state.entries = log.entries;
+    render();
+  }
+  function totalMl(entries){ return entries.reduce((s,e)=>s+e.ml,0); }
+
+  // ---------- RENDER ----------
+  function iconKeyFor(type){
+    const t = type.toLowerCase();
+    if(ICONS[t]) return t;
+    return 'custom';
+  }
+
+  function renderVesselRow(){
+    const row = document.getElementById('vessel-row');
+    row.innerHTML = '';
+    Object.keys(state.presets).forEach(type=>{
+      const ml = state.presets[type];
+      const btn = document.createElement('div');
+      btn.className='vessel-btn';
+      btn.innerHTML = '<div class="edit-pencil" data-type="'+type+'">✎</div>'
+        + '<div class="tap-area">' + ICONS[iconKeyFor(type)] + '<span class="vname">'+type+'</span><span class="vml">'+ml+' ml</span></div>';
+      btn.querySelector('.tap-area').addEventListener('click', ()=>addEntry(type, state.presets[type]));
+      btn.querySelector('.edit-pencil').addEventListener('click', (ev)=>{
+        ev.stopPropagation();
+        openPresetEditor(btn, type);
+      });
+      row.appendChild(btn);
+    });
+  }
+
+  function openPresetEditor(btn, type){
+    const tapArea = btn.querySelector('.tap-area');
+    const current = state.presets[type];
+    tapArea.innerHTML = ICONS[iconKeyFor(type)] + '<span class="vname">'+type+'</span>'
+      + '<div class="vml-edit"><input type="number" min="1" value="'+current+'" id="preset-edit-input"/><button id="preset-save-btn">✓</button></div>';
+    const input = tapArea.querySelector('#preset-edit-input');
+    input.focus(); input.select();
+    const save = async ()=>{
+      const v = parseInt(input.value,10);
+      if(v && v>0){ state.presets[type] = v; await saveProfile(); }
+      renderVesselRow();
+    };
+    tapArea.querySelector('#preset-save-btn').addEventListener('click', (e)=>{ e.stopPropagation(); save(); });
+    input.addEventListener('click', (e)=>e.stopPropagation());
+    input.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ save(); } });
+    input.addEventListener('blur', ()=> setTimeout(save, 150));
+  }
+
+  function renderVessel(total){
+    const pct = Math.max(0, Math.min(1, total/state.goal));
+    const top = 162, bottom = 8;
+    const fillHeight = pct * (top-bottom);
+    const waterRect = document.getElementById('waterRect');
+    const wavePath = document.getElementById('wavePath');
+    const y = top - fillHeight;
+    waterRect.setAttribute('y', y);
+    waterRect.setAttribute('height', Math.max(0,fillHeight));
+    wavePath.setAttribute('transform', 'translate(0,'+(-fillHeight)+')');
+    const ticks = document.getElementById('ticks');
+    ticks.innerHTML='';
+    for(let i=1;i<=3;i++){
+      const ty = top - (i/4)*(top-bottom);
+      const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1','24'); line.setAttribute('x2','30'); line.setAttribute('y1',ty); line.setAttribute('y2',ty);
+      ticks.appendChild(line);
+    }
+  }
+
+  let weekStripToken = 0;
+  async function renderWeekStrip(){
+    const myToken = ++weekStripToken;
+    const days = currentWeekDays();
+    const results = [];
+    for(const ds of days){
+      const log = await loadLog(ds);
+      if(myToken !== weekStripToken) return; // a newer call started; abandon this one
+      results.push({ ds, total: totalMl(log.entries||[]) });
+    }
+    if(myToken !== weekStripToken) return;
+
+    const strip = document.getElementById('week-strip');
+    const realToday = todayStr();
+    strip.innerHTML = '';
+    results.forEach(({ds, total})=>{
+      const pct = Math.round((total/state.goal)*100);
+      const chip = document.createElement('div');
+      chip.className = 'day-chip'
+        + (ds===state.date?' active':'')
+        + (ds===realToday?' is-today':'')
+        + (pct>=100?' full':'');
+      chip.innerHTML = weekdayShort(ds) + '<span class="dchip-pct">'+Math.min(pct,999)+'%</span>';
+      chip.addEventListener('click', async ()=>{
+        state.date = ds;
+        const l = await loadLog(ds);
+        state.entries = l.entries || [];
+        render();
+      });
+      strip.appendChild(chip);
+    });
+  }
+
+  function renderLogList(){
+    const list = document.getElementById('log-list');
+    const label = document.getElementById('log-section-label');
+    label.textContent = (state.date===todayStr()) ? "Today's log" : weekdayName(state.date)+"'s log ("+toDisplayDate(state.date)+")";
+    list.innerHTML = '';
+    if(!state.entries.length){
+      list.innerHTML = '<div class="empty-note">No entries yet' + (state.date===todayStr() ? ' — log your first drink above.' : ' for this day.') + '</div>';
+      return;
+    }
+    const sorted = [...state.entries].sort((a,b)=> a.time < b.time ? 1 : -1);
+    sorted.forEach(e=>{
+      const item = document.createElement('div');
+      item.className='log-item';
+      const ik = iconKeyFor(e.type);
+      item.innerHTML = '<span class="li-icon">'+ICONS[ik]+'</span>'
+        + '<span class="li-mid"><span class="li-type">'+escapeHtml(e.type)+'</span><br/><span class="li-time">'+e.time+'</span></span>'
+        + '<span class="li-ml">'+e.ml+' ml</span>'
+        + (state.date===todayStr() ? '<button class="li-del" data-id="'+e.id+'">✕</button>' : '');
+      list.appendChild(item);
+    });
+    list.querySelectorAll('.li-del').forEach(b=>{ b.addEventListener('click', ()=> deleteEntry(b.getAttribute('data-id'))); });
+  }
+
+  function renderReminderBanner(total){
+    const slot = document.getElementById('reminder-banner-slot');
+    if(state.date!==todayStr()){ slot.innerHTML=''; return; }
+    if(total >= state.goal){ slot.innerHTML=''; return; }
+    if(state.entries.length){ slot.innerHTML=''; return; }
+    slot.innerHTML = '<div class="reminder-banner"><span>💧</span><div><b>No water logged yet today.</b> Log your first drink to start the day right.</div></div>';
+  }
+
+  async function render(){
+    const total = totalMl(state.entries);
+    document.getElementById('total-ml').textContent = total;
+    document.getElementById('goal-ml-inline').textContent = state.goal;
+    document.getElementById('pct-badge').textContent = Math.round((total/state.goal)*100)+'%';
+    document.getElementById('greeting-text').innerHTML = 'Hi, '+escapeHtml(state.displayName)+' '+todaysEmoji()+'<span class="sub" id="date-text"></span>';
+    document.getElementById('date-text').textContent = weekdayName(state.date) + ' \u00b7 ' + toDisplayDate(state.date);
+    document.getElementById('goal-input').value = state.goal;
+    document.getElementById('reminder-interval').value = String(state.reminderMinutes);
+    renderVessel(total);
+    renderLogList();
+    renderReminderBanner(total);
+    await renderWeekStrip();
+    document.getElementById('streak-text').textContent = state.loginStreak + '-day login streak';
+    updateNotifUI();
+  }
+
+  // ---------- SETTINGS ----------
+  const goalInput = document.getElementById('goal-input');
+  let goalSaveTimeout;
+  goalInput.addEventListener('input', ()=>{
+    const v = parseInt(goalInput.value,10);
+    if(!isNaN(v) && v>=200){
+      state.goal = v;
+      clearTimeout(goalSaveTimeout);
+      goalSaveTimeout = setTimeout(async ()=>{ await saveProfile(); flashSaveNote('Goal saved'); render(); }, 500);
+    }
+  });
+  document.getElementById('reminder-interval').addEventListener('change', async (e)=>{
+    state.reminderMinutes = parseInt(e.target.value,10);
+    await saveProfile(); flashSaveNote('Reminder interval saved');
+    await scheduleNativeReminders();
+    setupReminderTimer();
+  });
+  function flashSaveNote(msg){
+    const el = document.getElementById('save-note');
+    el.textContent = msg;
+    setTimeout(()=>{ if(el.textContent===msg) el.textContent=''; }, 2000);
+  }
+  document.getElementById('custom-add-btn').addEventListener('click', ()=>{
+    const el = document.getElementById('custom-ml');
+    const v = parseInt(el.value,10);
+    if(v && v>0){ addEntry('Custom', v); el.value=''; }
+  });
+
+  // ---------- NOTIFICATIONS ----------
+  const REMINDER_NOTIF_IDS = Array.from({length:16}, (_,i)=>9001+i);
+  function isNative(){ return !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()); }
+  function localNotifPlugin(){ return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.LocalNotifications; }
+
+  async function getNotifPermissionGranted(){
+    if(isNative()){
+      const plugin = localNotifPlugin();
+      if(!plugin) return false;
+      const res = await plugin.checkPermissions();
+      return res.display === 'granted';
+    }
+    return (typeof Notification !== 'undefined') && Notification.permission === 'granted';
+  }
+  async function requestNotifPermission(){
+    if(isNative()){
+      const plugin = localNotifPlugin();
+      if(!plugin) return false;
+      const res = await plugin.requestPermissions();
+      return res.display === 'granted';
+    }
+    if(typeof Notification === 'undefined') return false;
+    const perm = await Notification.requestPermission();
+    return perm === 'granted';
+  }
+  async function fireImmediateNotification(title, body){
+    if(isNative()){
+      const plugin = localNotifPlugin();
+      if(plugin){ await plugin.schedule({ notifications: [{ id: 9000, title, body, schedule: { at: new Date(Date.now()+500) } }] }); }
+      return;
+    }
+    if(typeof Notification !== 'undefined'){ new Notification(title, { body }); }
+  }
+
+  // On native, we schedule real one-off reminders ahead of time so they fire
+  // even if the app is closed — this is the piece a browser tab can't do.
+  async function scheduleNativeReminders(){
+    if(!isNative()) return;
+    const plugin = localNotifPlugin();
+    if(!plugin) return;
+    await plugin.cancel({ notifications: REMINDER_NOTIF_IDS.map(id=>({id})) }).catch(()=>{});
+    if(!state.notifEnabled) return;
+    const granted = await getNotifPermissionGranted();
+    if(!granted) return;
+    const stepMs = state.reminderMinutes * 60000;
+    const notifications = REMINDER_NOTIF_IDS.map((id, i)=>({
+      id,
+      title: 'Time for a water break 💧',
+      body: "Don't forget to log your water — you can check today's progress in Flare-Hydra.",
+      schedule: { at: new Date(Date.now() + stepMs*(i+1)) }
+    }));
+    await plugin.schedule({ notifications });
+  }
+
+  function updateNotifUI(){
+    const toggle = document.getElementById('notif-toggle');
+    const statusText = document.getElementById('notif-status-text');
+    if(isNative()){
+      toggle.className = 'toggle' + (state.notifEnabled ? ' on' : '');
+      statusText.textContent = state.notifEnabled ? 'Enabled — you\u2019ll get reminders even if the app is closed' : 'Not enabled yet';
+      return;
+    }
+    const granted = (typeof Notification !== 'undefined') && Notification.permission === 'granted';
+    toggle.className = 'toggle' + ((state.notifEnabled && granted) ? ' on' : '');
+    if(typeof Notification === 'undefined'){ statusText.textContent = 'Not supported in this browser'; }
+    else if(Notification.permission === 'denied'){ statusText.textContent = 'Blocked in browser settings'; }
+    else if(state.notifEnabled && granted){ statusText.textContent = 'Enabled — nudges while this tab is open'; }
+    else { statusText.textContent = 'Not enabled yet'; }
+  }
+  document.getElementById('notif-toggle').addEventListener('click', async ()=>{
+    if(!state.notifEnabled){
+      const granted = await requestNotifPermission();
+      if(granted){
+        state.notifEnabled = true;
+        await fireImmediateNotification('Flare-Hydra reminders on', "We'll nudge you if you go quiet on water.");
+      }
+    } else {
+      state.notifEnabled = false;
+    }
+    await saveProfile();
+    await scheduleNativeReminders();
+    updateNotifUI();
+    setupReminderTimer();
+  });
+  function setupReminderTimer(){
+    if(reminderTimer) clearInterval(reminderTimer);
+    if(isNative()) return; // native reminders are pre-scheduled, no polling needed
+    reminderTimer = setInterval(checkReminder, 60*1000);
+  }
+  async function checkReminder(){
+    if(isNative()) return; // handled by scheduleNativeReminders instead
+    if(!state.notifEnabled) return;
+    if(typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+    if(state.date !== todayStr()){ return; }
+    const log = await loadLog(todayStr());
+    const total = totalMl(log.entries||[]);
+    if(total >= state.goal) return;
+    const sorted = [...log.entries].sort((a,b)=> a.time < b.time ? 1 : -1);
+    let refTime;
+    if(sorted.length){ const [h,m] = sorted[0].time.split(':').map(Number); refTime = new Date(); refTime.setHours(h,m,0,0); }
+    else { refTime = new Date(); refTime.setHours(7,0,0,0); }
+    const diffMin = (Date.now() - refTime.getTime())/60000;
+    if(diffMin >= state.reminderMinutes){
+      new Notification('Time for a water break 💧', { body: "You're at "+total+' of '+state.goal+' ml today. Log a glass to stay on track.' });
+    }
+  }
+
+  // ---------- INIT ----------
+  async function initApp(){
+    state.date = todayStr();
+    const log = await loadLog(state.date);
+    state.entries = log.entries || [];
+    renderVesselRow();
+    await render();
+    await scheduleNativeReminders();
+    setupReminderTimer();
+  }
+})();
+</script>
+</body>
+</html>
